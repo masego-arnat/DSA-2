@@ -1,24 +1,40 @@
 // import ballerina/http;
 import ballerina/graphql;
+import ballerina/io;
+import ballerina/log;
+import ballerinax/mongodb;
+
 public type CovidEntry record {|
-    readonly string isoCode;
-    string country;
-    decimal cases?;
-    decimal deaths?;
-    decimal recovered?;
-    decimal active?;
+    readonly string DepId;
+    string Name;
+    string objectives;
+
 |};
-   
 
+public type DepartmentEntry record {|
+    string Name;
+    string Objective;
 
-   
-table<CovidEntry> key(isoCode) covidEntriesTable = table [
-    {isoCode: "AFG", country: "Afghanistan", cases: 159303, deaths: 7386, recovered: 146084, active: 5833},
-    {isoCode: "SL", country: "Sri Lanka", cases: 598536, deaths: 15243, recovered: 568637, active: 14656},
-    {isoCode: "US", country: "USA", cases: 69808350, deaths: 880976, recovered: 43892277, active: 25035097}
+|};
+
+mongodb:ConnectionConfig mongoConfig = {
+
+    connection: {
+        url: "mongodb+srv://masego:bossokemang1@cluster0.myiqh55.mongodb.net/"
+    },
+    databaseName: "GraphQL"
+
+};
+
+mongodb:Client mongoClient = check new (mongoConfig);
+
+table<CovidEntry> key(DepId) covidEntriesTable = table [
+    {DepId: "AFG", Name: "Afghanistan", objectives: "To lead"},
+    {DepId: "SL", Name: "Law ", objectives: "ewrwe"},
+    {DepId: "US", Name: "Computer Science", objectives: "sdfsdf"}
 ];
-   
 
+# Description.
 public distinct service class CovidData {
     private final readonly & CovidEntry entryRecord;
 
@@ -27,40 +43,41 @@ public distinct service class CovidData {
     }
 
     resource function get isoCode() returns string {
-        return self.entryRecord.isoCode;
+        return self.entryRecord.DepId;
     }
 
     resource function get country() returns string {
-        return self.entryRecord.country;
+        return self.entryRecord.Name;
     }
 
-    resource function get cases() returns decimal? {
-        if self.entryRecord.cases is decimal {
-            return self.entryRecord.cases / 1000;
-        }
-        return;
-    }
+    // resource function get cases() returns decimal? {
+    //     if self.entryRecord.cases is decimal {
+    //         return self.entryRecord.cases / 1000;
+    //     }
+    //     return;
+    // }
 
-    resource function get deaths() returns decimal? {
-        if self.entryRecord.deaths is decimal {
-            return self.entryRecord.deaths / 1000;
-        }
-        return;
-    }
+    // resource function get deaths() returns decimal? {
+    //     if self.entryRecord.deaths is decimal {
+    //         return self.entryRecord.deaths / 1000;
+    //     }
+    //     return;
+    // }
 
-    resource function get recovered() returns decimal? {
-        if self.entryRecord.recovered is decimal {
-            return self.entryRecord.recovered / 1000;
-        }
-        return;
-    }
+    // resource function get recovered() returns decimal? {
+    //     if self.entryRecord.recovered is decimal {
+    //         return self.entryRecord.recovered / 1000;
+    //     }
+    //     return;
+    // }
 
-    resource function get active() returns decimal? {
-        if self.entryRecord.active is decimal {
-            return self.entryRecord.active / 1000;
-        }
-        return;
-    }
+    // resource function get active() returns decimal? {
+    //     if self.entryRecord.active is decimal {
+    //         return self.entryRecord.active / 1000;
+    //     }
+    //     return;
+    // }
+
 }
 
 service /covid19 on new graphql:Listener(9000) {
@@ -69,8 +86,12 @@ service /covid19 on new graphql:Listener(9000) {
         return covidEntries.map(entry => new CovidData(entry));
     }
 
-    resource function get filter(string isoCode) returns CovidData? {
-        CovidEntry? covidEntry = covidEntriesTable[isoCode];
+    resource function get filter(string DepId) returns CovidData? {
+
+        log:printInfo("Error in replacing data");
+
+        io:println("doc");
+        CovidEntry? covidEntry = covidEntriesTable[DepId];
         if covidEntry is CovidEntry {
             return new (covidEntry);
         }
@@ -79,9 +100,57 @@ service /covid19 on new graphql:Listener(9000) {
 
     remote function add(CovidEntry entry) returns CovidData {
         covidEntriesTable.add(entry);
+
+        map<json> eventJson = {
+        DepId: entry.DepId,
+        Name: entry.Name,
+        objectives: entry.objectives
+    };
+
+        do {
+
+            check mongoClient->insert(eventJson, "DepartmentObjectives");
+        } on fail var e {
+            log:printInfo("Error in saving data", e);
+        }
+
+        io:println("doc");
         return new CovidData(entry);
     }
+    // resource function post Createobjectives(DepartmentEntry event) returns string|error|DepartmentData {
+    //     string collection = "Q1";
+    //     string updatse = "";
+    //     map<json> eventJson = {
+    //     DepartmentName: event.Name,
+    //     DepartmentOjective: event.Objective
+    // };
+    //     //  map<json> docw = doc.toJson();
+    //     log:printInfo("Error in replacing data");
+
+    //     io:println("doc");
+    //     map<json> docwsws = {"name": "Gmsdail", "version": "0.9asdaqsd9.1", "type": "Servasdasdice"};
+    //     // map<json> update = {"$set": {"name": "Rdtmasegorui"}};
+    //     check mongoClient->insert(eventJson, collection);
+    //     // int response = check mongoClient->update(update, collection, "GraphQL", null, false, false);
+
+    //     updatse = " The Document has been added ";
+    //     // log:printInfo("Modified count: '" + response.toString() + "'.");
+    //     Foo[] fooArray = [
+    //     {id: 1, text: "one"},
+    //     {id: 2, text: "two"},
+    //     {id: 42, text: "forty-two"}
+    // ];
+
+    //     map<json> fooMap = map from Foo f in fooArray
+    //         select [f.id.toString()];
+    //       return new DepartmentData(event);
+    // }
 }
+
+type Foo record {
+    readonly int id;
+    string text;
+};
 // # A service representing a network-accessible API
 // # bound to port `9090`.
 // service / on new http:Listener(9090) {
