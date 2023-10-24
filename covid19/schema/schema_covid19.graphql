@@ -1,0 +1,29 @@
+type Query {
+  all: [CovidData!]!
+  filter(isoCode: String!): CovidData
+}
+
+type CovidData {
+  isoCode: String!
+  country: String!
+  cases: Decimal
+  deaths: Decimal
+  recovered: Decimal
+  active: Decimal
+}
+
+"The `Decimal` type corresponds to a subset of IEEE 754-2008 128-bit decimal (radix 10) floating point numbers"
+scalar Decimal
+
+type Mutation {
+  add(entry: CovidEntry!): CovidData!
+}
+
+input CovidEntry {
+  isoCode: String!
+  country: String!
+  cases: Decimal
+  deaths: Decimal
+  recovered: Decimal
+  active: Decimal
+}
