@@ -1,5 +1,0 @@
-## The GraphQL schema. E.g., https://countries.trevorblades.com or ./schemas/country.graphql
-schema: /covid19/schema/schema_covid19.graphql
-## The GraphQL documents that have queries/mutations
-documents:
-   /queries/query-country.graphql
