@@ -29,7 +29,7 @@ public type Supervisor record {|
     int TotalScore;
 
 |};
- 
+
 // Define MongoDB Connection Configuration
 mongodb:ConnectionConfig mongoConfig = {
 
@@ -81,12 +81,23 @@ public distinct service class GraphQL {
         return self.entryRecord.objectives;
     }
 
-    resource function get EmployeesTotalScores() returns string {
+    resource function get EmployeesTotalScores() returns Employees[] {
+      //  getting data from mongo db
+        stream<Employees, error?> sddf = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
 
-        return self.entryRecord.objectives;
+        // creting a array of emplapyees to pass the data from the database to or local array 
+        Employees[] employees = [];
+
+        _ = check sddf.forEach(function(Employees emp) {
+            
+                employees.push(emp);
+          
+
+        });
+
+        return employees;
     }
 
-   
 }
 
 service on new graphql:Listener(9000) {
@@ -243,7 +254,7 @@ service on new graphql:Listener(9000) {
         return new GraphQL(null, entry);
     }
 
-    remote function ViewEmployeeScores(Supervisor SupervisorId) returns  Employees[] {
+    remote function ViewEmployeeScores(Supervisor SupervisorId) returns Employees[] {
 
         //  getting data from mongo db
         stream<Employees, error?> sddf = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
@@ -258,10 +269,10 @@ service on new graphql:Listener(9000) {
 
         });
 
-        return  employees;
+        return employees;
     }
 
-        remote function GradeemployeeKPIs(Supervisor entry) returns  Employees[] {
+    remote function GradeemployeeKPIs(Supervisor entry) returns Employees[] {
 
         //  getting data from mongo db
         stream<Employees, error?> sddf = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
@@ -276,30 +287,78 @@ service on new graphql:Listener(9000) {
 
         });
 
-        return  employees;
+        return employees;
     }
 
-        remote function GradeTheEmployeesKPIs(Supervisor entry) returns  Employees[] {
+    remote function GradeTheEmployeesKPIs(Supervisor entry) returns Employees[] {
 
         //  getting data from mongo db
-        stream<Employees, error?> sddf = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
+        stream<Employees, error?> findEmployee = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
 
         // creting a array of emplapyees to pass the data from the database to or local array 
         Employees[] employees = [];
-
-        _ = check sddf.forEach(function(Employees emp) {
+        // looop thru and fin the specific employee 
+        _ = check findEmployee.forEach(function(Employees emp) {
             if (emp.EmployeesId == SupervisorId) {
+
                 employees.push(emp);
+
+                do {
+
+                    check mongoClient->insert(emp, "Employees");
+                } on fail var e {
+                    log:printInfo("Error in saving data", e);
+                }
+
             }
 
         });
 
-        return  employees;
+        return employees;
     }
 
+    remote function CreateKPIs(Employees entry) returns Employees {
 
+        map<json> eventJson = {
+        
+        KPIs: entry.KPIs,
 
+        };
 
+        do {
 
-   
+            check mongoClient->insert(eventJson, "Employees");
+        } on fail var e {
+            log:printInfo("Error in saving data", e);
+        }
+
+        return entry;
+    }
+
+    remote function GradeSupervisor(Employees entry) returns Employees {
+
+        //  getting data from mongo db
+        stream<Employees, error?> findSupervisor = checkpanic mongoClient->find("Supervisor", (), null, null, null, -1, -1);
+        // creting a array of emplapyees to pass the data from the database to or local array 
+        Supervisor[] employees = [];
+        // looop thru and fin the specific employee 
+        _ = check findSupervisor.forEach(function(Supervisor emp) {
+            if (emp.SupervisorId == entry.EmployeesId) {
+
+                do {
+
+                    check mongoClient->insert(emp, "Employees");
+                } on fail var e {
+                    log:printInfo("Error in saving data", e);
+                }
+
+            }
+
+        });
+
+        return entry;
+    }
+
+    // View Their Scores
+
 }
