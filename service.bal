@@ -138,53 +138,71 @@ service on new graphql:Listener(9000) {
         return new (null, employees);
     }
 
-    remote function add(DepartmentEntry entry) returns GraphQL {
+// A remote function to add a department entry to a MongoDB collection.
+remote function add(DepartmentEntry entry) returns GraphQL {
 
-        map<json> eventJson = {
+    // Create a JSON object representing the department entry.
+    map<json> eventJson = {
         DepId: entry.DepId,
         Name: entry.Name,
         objectives: entry.objectives
     };
 
-        do {
-
-            check mongoClient->insert(eventJson, "DepartmentObjectives");
-        } on fail var e {
-            log:printInfo("Error in saving data", e);
-        }
-
-        return new GraphQL(entry, null);
+    // Insert the department entry JSON into the "DepartmentObjectives" collection in MongoDB.
+    // Use the `mongoClient->insert` method to insert data into the database.
+    do {
+        check mongoClient->insert(eventJson, "DepartmentObjectives");
+    } on fail var e {
+        // If an error occurs during data insertion, log the error for debugging.
+        log:printInfo("Error in saving data", e);
     }
 
-    remote function CreateEmployees(Employees entry) returns GraphQL {
+    // Return a new GraphQL object with the added entry and a null error.
+    return new GraphQL(entry, null);
+}
 
-        map<json> eventJson = {
+
+   // A remote function to create an employee entry in a MongoDB collection.
+remote function CreateEmployees(Employees entry) returns GraphQL {
+
+    // Create a JSON object representing the employee entry.
+    map<json> eventJson = {
         Name: entry.Name,
         KPIs: entry.KPIs,
         TocalScore: entry.TotalScore
     };
 
-        do {
-
-            check mongoClient->insert(eventJson, "Employees");
-        } on fail var e {
-            log:printInfo("Error in saving data", e);
-        }
-
-        return new GraphQL(null, entry);
+    // Insert the employee entry JSON into the "Employees" collection in MongoDB.
+    // Use the `mongoClient->insert` method to insert data into the database.
+    do {
+        check mongoClient->insert(eventJson, "Employees");
+    } on fail var e {
+        // If an error occurs during data insertion, log the error for debugging.
+        log:printInfo("Error in saving data", e);
     }
 
-    remote function delete(DepartmentEntry entry) returns GraphQL {
+    // Return a new GraphQL object with `null` entry and the added employee data.
+    return new GraphQL(null, entry);
+}
 
-        int deleteRet = checkpanic mongoClient->delete("DepartmentObjectives", (), null, false);
-        if (deleteRet > 0) {
-            log:printInfo("Deleted the doc: '", deleteRet);
-        } else {
-            log:printInfo("Error in deleting data");
-        }
-        return new GraphQL(entry, null);
+// A remote function to delete department objectives from a MongoDB collection.
+remote function delete(DepartmentEntry entry) returns GraphQL {
 
+    // Use the `mongoClient->delete` method to delete documents from the "DepartmentObjectives" collection.
+    int deleteRet = checkpanic mongoClient->delete("DepartmentObjectives", (), null, false);
+
+    if (deleteRet > 0) {
+        // Log the number of deleted documents if successful.
+        log:printInfo("Deleted the doc: '", deleteRet);
+    } else {
+        // Log an error message if deletion fails.
+        log:printInfo("Error in deleting data");
     }
+
+    // Return a new GraphQL object with the deleted department entry and `null`.
+    return new GraphQL(entry, null);
+}
+
 
     remote function AssignEmployeeSupervisor(Employees entry) returns GraphQL {
 

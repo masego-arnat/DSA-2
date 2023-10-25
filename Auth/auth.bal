@@ -7,8 +7,7 @@ type User {
     string password;
     string token;
 }
-
-// In-memory user store for demonstration purposes
+ 
 map<string, User> userStore = {};
 
 // Function to generate a random API token
@@ -71,14 +70,10 @@ resource function register(http:Request req, http:Response res) {
     // Otherwise, proceed with user registration
 
     // Create a new user document
-    map<json> userDocument = {
-        "username": username,
-        "password": password,
-        // Add other user-related fields as needed
-    };
+ 
 
     // Insert the user data into the MongoDB database
-    error? insertResult = insertIntoMongoDB("usersCollection", userDocument);
+    error? insertResult = insertIntoMongoDB("Users", userDocument);
 
     if (insertResult is error) {
         // Handle the error and return an appropriate response
