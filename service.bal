@@ -204,41 +204,50 @@ remote function delete(DepartmentEntry entry) returns GraphQL {
 }
 
 
-    remote function AssignEmployeeSupervisor(Employees entry) returns GraphQL {
+   // A remote function to assign a supervisor to an employee and store the data in a MongoDB collection.
+remote function AssignEmployeeSupervisor(Employees entry) returns GraphQL {
 
-        map<json> eventJson = {
+    // Create a JSON object representing the supervisor-employee relationship.
+    map<json> eventJson = {
         SupervisorName: entry.SupervisorName,
-        EmaployeeName: entry.EmaployeeName,
+        EmployeeName: entry.EmployeeName
+    };
 
-        };
-
-        do {
-
-            check mongoClient->insert(eventJson, "Employees");
-        } on fail var e {
-            log:printInfo("Error in saving data", e);
-        }
-
-        return new GraphQL(null, entry);
+    // Insert the relationship data into the "Employees" collection in MongoDB.
+    // Use the `mongoClient->insert` method to insert data into the database.
+    do {
+        check mongoClient->insert(eventJson, "Employees");
+    } on fail var e {
+        // If an error occurs during data insertion, log the error for debugging.
+        log:printInfo("Error in saving data", e);
     }
 
-    remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
+    // Return a new GraphQL object with `null` as the entry and the assigned supervisor-employee data.
+    return new GraphQL(null, entry);
+}
 
-        map<json> eventJson = {
+// A remote function to approve an employee's Key Performance Indicators (KSI) and store the data in a MongoDB collection.
+remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
+
+    // Create a JSON object representing the approved KSI data.
+    map<json> eventJson = {
         KSI: entry.KSI,
-        EmaployeeName: entry.EmaployeeName,
+        EmployeeName: entry.EmployeeName
+    };
 
-        };
-
-        do {
-
-            check mongoClient->insert(eventJson, "Employees");
-        } on fail var e {
-            log:printInfo("Error in saving data", e);
-        }
-
-        return new GraphQL(null, entry);
+    // Insert the approved KSI data into the "Employees" collection in MongoDB.
+    // Use the `mongoClient->insert` method to insert data into the database.
+    do {
+        check mongoClient->insert(eventJson, "Employees");
+    } on fail var e {
+        // If an error occurs during data insertion, log the error for debugging.
+        log:printInfo("Error in saving data", e);
     }
+
+    // Return a new GraphQL object with `null` as the entry and the approved KSI data.
+    return new GraphQL(null, entry);
+}
+
 
     remote function DeleteEmployeesKSI(Employees entry) returns GraphQL {
         // string collectionName : Name of the collection
