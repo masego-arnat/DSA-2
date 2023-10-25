@@ -225,7 +225,7 @@ remote function AssignEmployeeSupervisor(Employees entry) returns GraphQL {
     // Return a new GraphQL object with `null` as the entry and the assigned supervisor-employee data.
     return new GraphQL(null, entry);
 }
-
+ 
 // A remote function to approve an employee's Key Performance Indicators (KSI) and store the data in a MongoDB collection.
 remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
 
