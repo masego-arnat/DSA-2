@@ -65,7 +65,7 @@ public distinct service class CovidData {
         return self.entryRecord.objectives;
     }
 
-    resource function get EmployeesTotalScores() returns string {
+    // resource function get EmployeesTotalScores() returns string {
     //     return self.entryRecord.objectives;
     // }
 
