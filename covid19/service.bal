@@ -2,8 +2,19 @@
 import ballerina/graphql;
 import ballerina/io;
 import ballerina/log;
+// import ballerina/sql;
+// import ballerinax/mysql;
+// import ballerinax/mysql.driver as _;
 import ballerinax/mongodb;
 
+//    mysql:Client mysqlClient = check new (host = "localhost", port = 3306, user = "root",
+//                                           password = "Test@123");
+// public function main() returns sql:Error? {
+//                                               // Creates a database.
+//     _ = check mysqlClient->execute(`CREATE DATABASE MUSIC_STORE;`);
+// }
+
+// 
 public type CovidEntry record {|
     readonly string DepId;
     string Name;
@@ -29,9 +40,9 @@ mongodb:ConnectionConfig mongoConfig = {
 mongodb:Client mongoClient = check new (mongoConfig);
 
 table<CovidEntry> key(DepId) covidEntriesTable = table [
-    {DepId: "AFG", Name: "Afghanistan", objectives: "To lead"},
+    {DepId: "La", Name: "Geology", objectives: "To lead"},
     {DepId: "SL", Name: "Law ", objectives: "ewrwe"},
-    {DepId: "US", Name: "Computer Science", objectives: "sdfsdf"}
+    {DepId: "CS", Name: "Computer Science", objectives: "sdfsdf"}
 ];
 
 # Description.
@@ -42,13 +53,21 @@ public distinct service class CovidData {
         self.entryRecord = entryRecord.cloneReadOnly();
     }
 
-    resource function get isoCode() returns string {
+    resource function get deparmentId() returns string {
         return self.entryRecord.DepId;
     }
 
-    resource function get country() returns string {
+    resource function get deparment() returns string {
         return self.entryRecord.Name;
     }
+
+    resource function get objectives() returns string {
+        return self.entryRecord.objectives;
+    }
+
+    resource function get EmployeesTotalScores() returns string {
+    //     return self.entryRecord.objectives;
+    // }
 
     // resource function get cases() returns decimal? {
     //     if self.entryRecord.cases is decimal {
@@ -117,6 +136,19 @@ service /covid19 on new graphql:Listener(9000) {
         io:println("doc");
         return new CovidData(entry);
     }
+    remote function delete(CovidEntry entry) returns CovidData {
+        // map<json> deleteFilter = {"name": "ballerina"};
+        int deleteRet = checkpanic mongoClient->delete("DepartmentObjectives", (), null, false);
+        if (deleteRet > 0) {
+            log:printInfo("Delete count: '" + deleteRet.toString() + "'.");
+        } else {
+            log:printInfo("Error in deleting data");
+        }
+        return new CovidData(entry);
+        //   check mongoClient->delete(eventJson, "DepartmentObjectives");
+        //   function delete(string collectionName, string? databaseName, map<json>? filter, boolean isMultiple)
+    }
+
     // resource function post Createobjectives(DepartmentEntry event) returns string|error|DepartmentData {
     //     string collection = "Q1";
     //     string updatse = "";
@@ -147,10 +179,6 @@ service /covid19 on new graphql:Listener(9000) {
     // }
 }
 
-type Foo record {
-    readonly int id;
-    string text;
-};
 // # A service representing a network-accessible API
 // # bound to port `9090`.
 // service / on new http:Listener(9090) {
