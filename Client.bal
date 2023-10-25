@@ -1,82 +1,229 @@
-import ballerina/io;
 import ballerina/http;
+import ballerina/io;
+import ballerinax/mongodb;
 
 public function main() {
-  // Replace with the actual URL of your GraphQL server.
-    string graphqlServerURL = "http://localhost:4000/graphql";
 
-    // Define your GraphQL query.
-    string graphqlQuery = `
-      {
-        departmentId
-        department
-        objectives
-        EmployeesTotalScores {
-          id
-          name
-        }
-      }
-    `;
+    // Define MongoDB Connection Configuration
+    mongodb:ConnectionConfig mongoConfig = {
 
-    // Create a GraphQL client.
-    graphql:Client client = new(graphqlServerURL);
+    connection: {
+        url: "mongodb+srv://masego:bossokemang1@cluster0.myiqh55.mongodb.net/"
+    },
+    databaseName: "GraphQL"
+};
 
-    // Send the query to the GraphQL server.
-    var response = client->executeQuery(graphqlQuery);
-
-    // Handle the response.
-    if (response is graphql:Response) {
-        json responseData = response.data;
-        io:println("Department ID: " + responseData.departmentId.toString());
-        io:println("Department: " + responseData.department.toString());
-        io:println("Objectives: " + responseData.objectives.toString());
-
-        // Process the EmployeesTotalScores array.
-        json[] employees = responseData.EmployeesTotalScores;
-        foreach var emp in employees {
-            io:println("Employee ID: " + emp.id.toString());
-            io:println("Employee Name: " + emp.name.toString());
-        }
-    } else {
-        io:println("Error accessing the GraphQL server: " + response.toString());
-    }
+    // Create a new MongoDB client using the provided configuration
+    mongodb:Client mongoClient = check new (mongoConfig);
 
 
-
-
-  graphql:Response|error allDepartmentsResponse = client->executeQuery(allDepartmentsQuery);
-    // Handle the response...
-
-    // 2. Search for a department by Department ID.
-    // Documentation: Searches for a department by Department ID.
-    string searchDepartmentQuery = `
-        query($depId: String!) {
-            searchDeparment(DepId: $depId) {
-                departmentId
-                department
-                objectives
-            }
-        }
-    `;
-    graphql:Response|error searchDepartmentResponse = client->executeQuery(searchDepartmentQuery, { "depId": "yourDepId" });
-    // Handle the response...
-
-    // 3. Get all EmployeesTotalScores.
-    // Documentation: Retrieves all Employees' total scores.
-    string employeesTotalScoresQuery = `
-        query {
-            EmployeesTotalScores {
-                id
-                name
-                // Include other fields as needed
-            }
-        }
-    `;
-    graphql:Response|error employeesTotalScoresResponse = client->executeQuery(employeesTotalScoresQuery);
-    // Handle the response...
-
-    // You can similarly create client code for other GraphQL operations.
-
-
-
+//
+// - Parameter id: The ID of the user to retrieve.
+// - Returns: A JSON object representing the user data, or an error if the user is not found.
+ // Retrieves user data based on the provided user ID.
+public function getUser(string id) returns json|error {
+    // Construct a GraphQL query to get user information.
+    string query = string `{
+        "query": "{ user(id: \"${id}\") { id, firstName, lastName, jobTitle, position, role, department { id, name }, kpis { id, name } } }"
+    }`;
+    return self.graphqlQuery(query);
 }
+
+// Retrieves all user data.
+public function getAllUsers() returns json|error {
+    // Construct a GraphQL query to fetch all users.
+    string query = "{\"query\": \"{ users { id, firstName, lastName, role } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves department data based on the provided department ID.
+public function getDepartment(string id) returns json|error {
+    // Construct a GraphQL query to get department information.
+    string query = "{\"query\": \"{ department(id: \"" + id + "\") { id, name, hod { id, firstName, lastName }, objectives { id, name }, users { id, firstName, lastName } } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves all department data.
+public function getAllDepartments() returns json|error {
+    // Construct a GraphQL query to fetch all departments.
+    string query = "{\"query\": \"{ departments { id, name } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves department objective data based on the provided objective ID.
+public function getDepartmentObjective(string id) returns json|error {
+    // Construct a GraphQL query to get department objective information.
+    string query = "{\"query\": \"{ departmentObjective(id: \"" + id + "\") { id, name, weight, department { id, name }, relatedKPIs { id, name } } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves all department objectives.
+public function getAllDepartmentObjectives() returns json|error {
+    // Construct a GraphQL query to fetch all department objectives.
+    string query = "{\"query\": \"{ departmentObjectives { id, name, weight } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves KPI data based on the provided KPI ID.
+public function getKPI(string id) returns json|error {
+    // Construct a GraphQL query to get KPI information.
+    string query = "{\"query\": \"{ kpi(id: \"" + id + "\") { id, user { id, firstName, lastName }, name, metric, unit, score, relatedObjectives { id, name } } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves all KPIs.
+public function getAllKPIs() returns json|error {
+    // Construct a GraphQL query to fetch all KPIs.
+    string query = "{\"query\": \"{ kpis { id, name, metric, unit, score } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Mutations for User
+
+// Creates a new user.
+public function createUser(string firstName, string lastName, string jobTitle, string position, string role, string departmentId) returns json|error {
+    // Construct a GraphQL mutation to create a user.
+    string mutation = "{\"query\": \"mutation { createUser(firstName: \"" + firstName + "\", lastName: \"" + lastName + "\", jobTitle: \"" + jobTitle + "\", position: \"" + position + "\", role: " + role + ", departmentId: \"" + departmentId + "\") { id, firstName, lastName } }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Updates an existing user.
+public function updateUser(string id, string firstName, string lastName, string jobTitle, string position, string role, string departmentId) returns json|error {
+    // Construct a GraphQL mutation to update a user.
+    string mutation = "{\"query\": \"mutation { updateUser(id: \"" + id + "\", firstName: \"" + firstName + "\", lastName: \"" + lastName + "\", jobTitle: \"" + jobTitle + "\", position: \"" + position + "\", role: " + role + ", departmentId: \"" + departmentId + "\") { id, firstName, lastName } }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Deletes a user based on the provided user ID.
+public function deleteUser(string id) returns json|error {
+    // Construct a GraphQL mutation to delete a user.
+    string mutation = "{\"query\": \"mutation { deleteUser(id: \"" + id + "\") }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Mutations for Departments
+
+// Creates a new department.
+public function createDepartment(string name) returns json|error {
+    // Construct a GraphQL mutation to create a department.
+    string mutation = "{\"query\": \"mutation { createDepartment(name: \\\"" + name + "\\\") { id, name } }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Updates an existing department.
+public function updateDepartment(string id, string name) returns json|error {
+    // Construct a GraphQL mutation to update a department.
+    string mutation = "{\"query\": \"mutation { updateDepartment(id: \\\"" + id + "\\\", name: \\\"" + name + "\\\") { id, name } }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Deletes a department based on the provided department ID.
+public function deleteDepartment(string id) returns json|error {
+    // Construct a GraphQL mutation to delete a department.
+    string mutation = "{\"query\": \"mutation { deleteDepartment(id: \\\"" + id + "\\\") }\"}";
+    return self.graphqlQuery(mutation);
+}
+// Retrieves user data based on the provided user ID.
+public function getUser(string id) returns json|error {
+    // Construct a GraphQL query to get user information.
+    string query = string `{
+        "query": "{ user(id: \"${id}\") { id, firstName, lastName, jobTitle, position, role, department { id, name }, kpis { id, name } } }"
+    }`;
+    return self.graphqlQuery(query);
+}
+
+// Retrieves all user data.
+public function getAllUsers() returns json|error {
+    // Construct a GraphQL query to fetch all users.
+    string query = "{\"query\": \"{ users { id, firstName, lastName, role } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves department data based on the provided department ID.
+public function getDepartment(string id) returns json|error {
+    // Construct a GraphQL query to get department information.
+    string query = "{\"query\": \"{ department(id: \"" + id + "\") { id, name, hod { id, firstName, lastName }, objectives { id, name }, users { id, firstName, lastName } } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves all department data.
+public function getAllDepartments() returns json|error {
+    // Construct a GraphQL query to fetch all departments.
+    string query = "{\"query\": \"{ departments { id, name } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves department objective data based on the provided objective ID.
+public function getDepartmentObjective(string id) returns json|error {
+    // Construct a GraphQL query to get department objective information.
+    string query = "{\"query\": \"{ departmentObjective(id: \"" + id + "\") { id, name, weight, department { id, name }, relatedKPIs { id, name } } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves all department objectives.
+public function getAllDepartmentObjectives() returns json|error {
+    // Construct a GraphQL query to fetch all department objectives.
+    string query = "{\"query\": \"{ departmentObjectives { id, name, weight } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves KPI data based on the provided KPI ID.
+public function getKPI(string id) returns json|error {
+    // Construct a GraphQL query to get KPI information.
+    string query = "{\"query\": \"{ kpi(id: \"" + id + "\") { id, user { id, firstName, lastName }, name, metric, unit, score, relatedObjectives { id, name } } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Retrieves all KPIs.
+public function getAllKPIs() returns json|error {
+    // Construct a GraphQL query to fetch all KPIs.
+    string query = "{\"query\": \"{ kpis { id, name, metric, unit, score } }\"}";
+    return self.graphqlQuery(query);
+}
+
+// Mutations for User
+
+// Creates a new user.
+public function createUser(string firstName, string lastName, string jobTitle, string position, string role, string departmentId) returns json|error {
+    // Construct a GraphQL mutation to create a user.
+    string mutation = "{\"query\": \"mutation { createUser(firstName: \"" + firstName + "\", lastName: \"" + lastName + "\", jobTitle: \"" + jobTitle + "\", position: \"" + position + "\", role: " + role + ", departmentId: \"" + departmentId + "\") { id, firstName, lastName } }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Updates an existing user.
+public function updateUser(string id, string firstName, string lastName, string jobTitle, string position, string role, string departmentId) returns json|error {
+    // Construct a GraphQL mutation to update a user.
+    string mutation = "{\"query\": \"mutation { updateUser(id: \"" + id + "\", firstName: \"" + firstName + "\", lastName: \"" + lastName + "\", jobTitle: \"" + jobTitle + "\", position: \"" + position + "\", role: " + role + ", departmentId: \"" + departmentId + "\") { id, firstName, lastName } }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Deletes a user based on the provided user ID.
+public function deleteUser(string id) returns json|error {
+    // Construct a GraphQL mutation to delete a user.
+    string mutation = "{\"query\": \"mutation { deleteUser(id: \"" + id + "\") }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Mutations for Departments
+
+// Creates a new department.
+public function createDepartment(string name) returns json|error {
+    // Construct a GraphQL mutation to create a department.
+    string mutation = "{\"query\": \"mutation { createDepartment(name: \\\"" + name + "\\\") { id, name } }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Updates an existing department.
+public function updateDepartment(string id, string name) returns json|error {
+    // Construct a GraphQL mutation to update a department.
+    string mutation = "{\"query\": \"mutation { updateDepartment(id: \\\"" + id + "\\\", name: \\\"" + name + "\\\") { id, name } }\"}";
+    return self.graphqlQuery(mutation);
+}
+
+// Deletes a department based on the provided department ID.
+public function deleteDepartmentobjectives(string id) returns json|error {
+    // Construct a GraphQL mutation to delete a department.
+    string mutation = "{\"query\": \"mutation { deleteDepartment(id: \\\"" + id + "\\\") }\"}";
+    return self.graphqlQuery(mutation);
+}
+
