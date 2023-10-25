@@ -305,36 +305,27 @@ service on new graphql:Listener(9000) {
         return  employees;
     }
 
+        remote function GradeTheEmployeesKPIs(Supervisor entry) returns  Employees[] {
+
+        //  getting data from mongo db
+        stream<Employees, error?> sddf = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
+
+        // creting a array of emplapyees to pass the data from the database to or local array 
+        Employees[] employees = [];
+
+        _ = check sddf.forEach(function(Employees emp) {
+            if (emp.EmployeesId == SupervisorId) {
+                employees.push(emp);
+            }
+
+        });
+
+        return  employees;
+    }
 
 
 
 
-    // resource function post Createobjectives(DepartmentEntry event) returns string|error|DepartmentData {
-    //     string collection = "Q1";
-    //     string updatse = "";
-    //     map<json> eventJson = {
-    //     DepartmentName: event.Name,
-    //     DepartmentOjective: event.Objective
-    // };
-    //     //  map<json> docw = doc.toJson();
-    //     log:printInfo("Error in replacing data");
 
-    //     io:println("doc");
-    //     map<json> docwsws = {"name": "Gmsdail", "version": "0.9asdaqsd9.1", "type": "Servasdasdice"};
-    //     // map<json> update = {"$set": {"name": "Rdtmasegorui"}};
-    //     check mongoClient->insert(eventJson, collection);
-    //     // int response = check mongoClient->update(update, collection, "GraphQL", null, false, false);
-
-    //     updatse = " The Document has been added ";
-    //     // log:printInfo("Modified count: '" + response.toString() + "'.");
-    //     Foo[] fooArray = [
-    //     {id: 1, text: "one"},
-    //     {id: 2, text: "two"},
-    //     {id: 42, text: "forty-two"}
-    // ];
-
-    //     map<json> fooMap = map from Foo f in fooArray
-    //         select [f.id.toString()];
-    //       return new DepartmentData(event);
-    // }
+   
 }
