@@ -2,17 +2,21 @@
 import ballerina/graphql;
 import ballerina/io;
 import ballerina/log;
+import ballerina/sql;
 // import ballerina/sql;
 // import ballerinax/mysql;
 // import ballerinax/mysql.driver as _;
 import ballerinax/mongodb;
+import ballerinax/mssql;
+import ballerinax/mssql.driver as _;
 
-//    mysql:Client mysqlClient = check new (host = "localhost", port = 3306, user = "root",
-//                                           password = "Test@123");
-// public function main() returns sql:Error? {
-//                                               // Creates a database.
-//     _ = check mysqlClient->execute(`CREATE DATABASE MUSIC_STORE;`);
-// }
+// mssql:ClientConfiguration dbConfig = {
+//     url: "jdbc:sqlserver://(localdb)/MSSQLLocalDB",
+//     username: "<username>",
+//     password: "<password>"
+// };
+
+mssql:Client|sql:Error dbClient = new (host = "(localdb)/MSSQLLocalDB", user = "root", password = "<password>", database = "<dbName>", port = 4096);
 
 // 
 public type CovidEntry record {|
@@ -25,6 +29,14 @@ public type CovidEntry record {|
 public type DepartmentEntry record {|
     string Name;
     string Objective;
+
+|};
+
+public type Employees record {|
+    readonly string StaffId;
+    string Name;
+    string KPIs;
+    int TotalScore;
 
 |};
 
@@ -45,15 +57,41 @@ table<CovidEntry> key(DepId) covidEntriesTable = table [
     {DepId: "CS", Name: "Computer Science", objectives: "sdfsdf"}
 ];
 
-# Description.
-public distinct service class CovidData {
-    private final readonly & CovidEntry entryRecord;
+table<Employees> key(StaffId) EmplaoyeesEntries = table [
+    {StaffId: "Nust01", Name: "Geology", KPIs: "To lead", TotalScore: 12},
+    {StaffId: "Nust02", Name: "Law ", KPIs: "ewrwe", TotalScore: 21},
+    {StaffId: "Nust03", Name: "Computer Science", KPIs: "sdfsdf", TotalScore: 34}
+];
 
-    function init(CovidEntry entryRecord) {
-        self.entryRecord = entryRecord.cloneReadOnly();
+# Description.
+public distinct service class CovidDat {
+    private final readonly & Employees entryRecddord;
+    function init(Employees entryRecddord) {
+        self.entryRecddord = entryRecddord.cloneReadOnly();
+        // self.entryRecord = entryRecord.cloneReadOnly();
+    }
+
+    resource function get Emplaoyees() returns string {
+        return self.entryRecddord.StaffId;
+    }
+}
+
+public distinct service class CovidDataWW {
+    private final readonly & CovidEntry entryRecord;
+    private final readonly & Employees entryRecddord;
+    function init(CovidEntry? entryRecord, Employees? entryRecddord) {
+
+        self.entryRecord = <CovidEntry & readonly>entryRecord.cloneReadOnly();
+
+        // if (entryRecddord != null)
+        // {
+            self.entryRecddord = <Employees & readonly>entryRecddord.cloneReadOnly();
+
+        // }
     }
 
     resource function get deparmentId() returns string {
+
         return self.entryRecord.DepId;
     }
 
@@ -65,7 +103,10 @@ public distinct service class CovidData {
         return self.entryRecord.objectives;
     }
 
-    // resource function get EmployeesTotalScores() returns string {
+    // resource function get EmployeesTotalScores() returns Employees {
+    //     Employees ed =  ed.KPIs,
+    //     ed.Name,
+    //     ;
     //     return self.entryRecord.objectives;
     // }
 
@@ -96,28 +137,63 @@ public distinct service class CovidData {
     //     }
     //     return;
     // }
-
 }
 
+// final mysql:Client dbClient = check new(
+//     host=HOST, user=USER, password=PASSWORD, port=PORT, database="Graph"
+// );
+
+// init (string host, string? user, string? password, string? database, int port, string instance, Options? options, ConnectionPool? connectionPool)
+
 service /covid19 on new graphql:Listener(9000) {
-    resource function get all() returns CovidData[] {
+    resource function get all() returns CovidDataWW[] {
         CovidEntry[] covidEntries = covidEntriesTable.toArray().cloneReadOnly();
-        return covidEntries.map(entry => new CovidData(entry));
+        return covidEntries.map(entry => new CovidDataWW(entry, null));
     }
 
-    resource function get filter(string DepId) returns CovidData? {
+    resource function get filter(string DepId) returns CovidDataWW? {
 
         log:printInfo("Error in replacing data");
 
         io:println("doc");
         CovidEntry? covidEntry = covidEntriesTable[DepId];
         if covidEntry is CovidEntry {
-            return new (covidEntry);
+            return new (covidEntry, null);
         }
         return;
     }
 
-    remote function add(CovidEntry entry) returns CovidData {
+    resource function get EmployeesTotalScore(string Name) returns   Employees[]|error? {
+
+        log:printInfo("Error in replacing data");
+        // function find(string collectionName, string? databaseName, map<json>? filter, map<json>? projection, map<json>? sort, int 'limit, int skip, typedesc<record {}> rowType) returns stream<rowType, error?>|Error
+        io:println("doc");
+
+        stream<Employees, error?> sddf = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
+
+           io:println("doc", sddf.toString());
+
+        // stream<string[], error?> sdddddf = sddf.'map(Employees => Employees.toArray());
+
+        // io:println("doc1", sdddddf);
+
+          Employees[] employees = [];
+
+    _ = check sddf.forEach(function(Employee emp) {
+        employees.push(emp);
+              io:println("doc1", emp);
+    });
+
+   
+
+        Employees? covidEntry = EmplaoyeesEntries[Name];
+        if covidEntry is Employees {
+            return new (null, covidEntry);
+        }
+        return;
+    }
+
+    remote function add(CovidEntry entry) returns CovidDataWW {
         covidEntriesTable.add(entry);
 
         map<json> eventJson = {
@@ -134,9 +210,38 @@ service /covid19 on new graphql:Listener(9000) {
         }
 
         io:println("doc");
-        return new CovidData(entry);
+        return new CovidDataWW(entry, null);
     }
-    remote function delete(CovidEntry entry) returns CovidData {
+
+    remote function CreateEmployees(Employees entry) returns CovidDataWW {
+
+        map<json> eventJson = {
+        Name: entry.Name,
+            KPIs: entry.KPIs,
+                
+                TocalScore: entry.TotalScore
+    };
+
+        do {
+
+            check mongoClient->insert(eventJson, "Employees");
+        } on fail var e {
+            log:printInfo("Error in saving data", e);
+        }
+
+        io:println("doc");
+    //        readonly string DepId;
+    // string Name;
+    // string objectives;
+CovidEntry entdry = {
+    DepId: "DEP001",
+    Name: "John Doe",
+    objectives: "edf"
+};
+        return new CovidDataWW(entdry, entry);
+    }
+
+    remote function delete(CovidEntry entry) returns CovidDataWW {
         // map<json> deleteFilter = {"name": "ballerina"};
         int deleteRet = checkpanic mongoClient->delete("DepartmentObjectives", (), null, false);
         if (deleteRet > 0) {
@@ -144,7 +249,7 @@ service /covid19 on new graphql:Listener(9000) {
         } else {
             log:printInfo("Error in deleting data");
         }
-        return new CovidData(entry);
+        return new CovidDataWW(entry, null);
         //   check mongoClient->delete(eventJson, "DepartmentObjectives");
         //   function delete(string collectionName, string? databaseName, map<json>? filter, boolean isMultiple)
     }

@@ -2,6 +2,8 @@ type Query {
   all: [CovidData!]!
   all: [DepartmentData!]!
   filter(isoCode: String!): CovidData
+
+  filters: [EmployeesData]
 }
 
 type CovidData {
@@ -11,10 +13,15 @@ DepId: string!
 }
 type DepartmentData {
   Name: String!
-  Objective: String!
-  
+  Objective: String!  
 }
+ type EmployeesData {
+      StaffId: string;
+     Name:string;
+      KPIs: string;
+      TocalScore: int;
 
+}
 "The `Decimal` type corresponds to a subset of IEEE 754-2008 128-bit decimal (radix 10) floating point numbers"
 scalar Decimal
 
@@ -34,4 +41,13 @@ input DepartmentEntry {
   Name: String!
   Objective: String!
   
+}
+
+
+ input EmployeesEntry {
+      StaffId: string;
+     Name:string;
+      KPIs: string;
+      TocalScore: int;
+
 }

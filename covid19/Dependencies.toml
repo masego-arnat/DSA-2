@@ -289,6 +289,20 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
+name = "sql"
+version = "1.11.1"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.object"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "sql", moduleName = "sql"}
+]
+
+[[package]]
+org = "ballerina"
 name = "task"
 version = "2.5.0"
 dependencies = [
@@ -381,6 +395,28 @@ modules = [
 ]
 
 [[package]]
+org = "ballerinax"
+name = "mssql"
+version = "1.11.1"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "sql"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerinax", packageName = "mssql", moduleName = "mssql"}
+]
+
+[[package]]
+org = "ballerinax"
+name = "mssql.driver"
+version = "1.6.0"
+modules = [
+	{org = "ballerinax", packageName = "mssql.driver", moduleName = "mssql.driver"}
+]
+
+[[package]]
 org = "romario_arnat"
 name = "covid19"
 version = "0.1.0"
@@ -389,9 +425,12 @@ dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "mongodb"}
+	{org = "ballerinax", name = "mongodb"},
+	{org = "ballerinax", name = "mssql"},
+	{org = "ballerinax", name = "mssql.driver"}
 ]
 modules = [
 	{org = "romario_arnat", packageName = "covid19", moduleName = "covid19"}
