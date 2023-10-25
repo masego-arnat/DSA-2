@@ -29,7 +29,7 @@ public type Supervisor record {|
     int TotalScore;
 
 |};
-
+ 
 // Define MongoDB Connection Configuration
 mongodb:ConnectionConfig mongoConfig = {
 
@@ -86,33 +86,7 @@ public distinct service class GraphQL {
         return self.entryRecord.objectives;
     }
 
-    // resource function get cases() returns decimal? {
-    //     if self.entryRecord.cases is decimal {
-    //         return self.entryRecord.cases / 1000;
-    //     }
-    //     return;
-    // }
-
-    // resource function get deaths() returns decimal? {
-    //     if self.entryRecord.deaths is decimal {
-    //         return self.entryRecord.deaths / 1000;
-    //     }
-    //     return;
-    // }
-
-    // resource function get recovered() returns decimal? {
-    //     if self.entryRecord.recovered is decimal {
-    //         return self.entryRecord.recovered / 1000;
-    //     }
-    //     return;
-    // }
-
-    // resource function get active() returns decimal? {
-    //     if self.entryRecord.active is decimal {
-    //         return self.entryRecord.active / 1000;
-    //     }
-    //     return;
-    // }
+   
 }
 
 service on new graphql:Listener(9000) {
