@@ -1,4 +1,4 @@
-import ballerina/graphql;
+import ballerina/graphql;?
 import ballerina/io;
 import ballerina/log;
 import ballerina/sql;
@@ -135,7 +135,7 @@ service on new graphql:Listener(9000) {
 
         });
 
-        return new (null, employees);
+        return new (employees);
     }
 
 // A remote function to add a department entry to a MongoDB collection.

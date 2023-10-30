@@ -1,5 +1,10 @@
+ 
+ type Department   {|
+        DepId: string!
+    Name: string!
+      objectives: string!;
 
-
+|};
  # HOD =============================================================
 
 

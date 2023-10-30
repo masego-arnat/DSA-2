@@ -78,37 +78,11 @@ public function getAllKPIs() returns json|error {
     return self.graphqlQuery(query);
 }
 
-// Mutations for User
+ 
 
-// Creates a new user.
-public function createUser(string firstName, string lastName, string jobTitle, string position, string role, string departmentId) returns json|error {
-    // Construct a GraphQL mutation to create a user.
-    string mutation = "{\"query\": \"mutation { createUser(firstName: \"" + firstName + "\", lastName: \"" + lastName + "\", jobTitle: \"" + jobTitle + "\", position: \"" + position + "\", role: " + role + ", departmentId: \"" + departmentId + "\") { id, firstName, lastName } }\"}";
-    return self.graphqlQuery(mutation);
-}
-
-// Updates an existing user.
-public function updateUser(string id, string firstName, string lastName, string jobTitle, string position, string role, string departmentId) returns json|error {
-    // Construct a GraphQL mutation to update a user.
-    string mutation = "{\"query\": \"mutation { updateUser(id: \"" + id + "\", firstName: \"" + firstName + "\", lastName: \"" + lastName + "\", jobTitle: \"" + jobTitle + "\", position: \"" + position + "\", role: " + role + ", departmentId: \"" + departmentId + "\") { id, firstName, lastName } }\"}";
-    return self.graphqlQuery(mutation);
-}
-
-// Deletes a user based on the provided user ID.
-public function deleteUser(string id) returns json|error {
-    // Construct a GraphQL mutation to delete a user.
-    string mutation = "{\"query\": \"mutation { deleteUser(id: \"" + id + "\") }\"}";
-    return self.graphqlQuery(mutation);
-}
 
 // Mutations for Departments
-
-// Creates a new department.
-public function createDepartment(string name) returns json|error {
-    // Construct a GraphQL mutation to create a department.
-    string mutation = "{\"query\": \"mutation { createDepartment(name: \\\"" + name + "\\\") { id, name } }\"}";
-    return self.graphqlQuery(mutation);
-}
+ 
 
 // Updates an existing department.
 public function updateDepartment(string id, string name) returns json|error {
@@ -181,7 +155,7 @@ public function getAllKPIs() returns json|error {
     return self.graphqlQuery(query);
 }
 
-// Mutations for User
+// Mutations for User ==============================================
 
 // Creates a new user.
 public function createUser(string firstName, string lastName, string jobTitle, string position, string role, string departmentId) returns json|error {
@@ -197,14 +171,8 @@ public function updateUser(string id, string firstName, string lastName, string 
     return self.graphqlQuery(mutation);
 }
 
-// Deletes a user based on the provided user ID.
-public function deleteUser(string id) returns json|error {
-    // Construct a GraphQL mutation to delete a user.
-    string mutation = "{\"query\": \"mutation { deleteUser(id: \"" + id + "\") }\"}";
-    return self.graphqlQuery(mutation);
-}
-
-// Mutations for Departments
+ 
+// Mutations for Departments ====================================================
 
 // Creates a new department.
 public function createDepartment(string name) returns json|error {
@@ -213,13 +181,7 @@ public function createDepartment(string name) returns json|error {
     return self.graphqlQuery(mutation);
 }
 
-// Updates an existing department.
-public function updateDepartment(string id, string name) returns json|error {
-    // Construct a GraphQL mutation to update a department.
-    string mutation = "{\"query\": \"mutation { updateDepartment(id: \\\"" + id + "\\\", name: \\\"" + name + "\\\") { id, name } }\"}";
-    return self.graphqlQuery(mutation);
-}
-
+ 
 // Deletes a department based on the provided department ID.
 public function deleteDepartmentobjectives(string id) returns json|error {
     // Construct a GraphQL mutation to delete a department.
