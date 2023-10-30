@@ -1,0 +1,180 @@
+
+
+ # HOD =============================================================
+
+
+# Represents a Key Performance Indicator.
+type KPI {
+  id: ID!
+  name: String!
+  score: Int!
+  employee: Employee!
+}
+
+# Represents the Head of Department.
+type HoD {
+  id: ID!
+  name: String!
+  department: String!
+}
+
+# Queries for retrieving information.
+type Query {
+  # Retrieve a Head of Department by their ID.
+  getHoD(id: ID!): HoD
+  # Retrieve an Employee by their ID.
+  getEmployee(id: ID!): Employee
+}
+
+# Mutations for performing actions.
+type Mutation {
+  # Create a new KPI for an Employee.
+  createKPI(employeeId: ID!, name: String!): KPI
+  # Delete a KPI by its ID.
+  deleteKPI(id: ID!): ID
+  # Update the score of a KPI.
+  updateKPI(id: ID!, score: Int!): KPI
+  # Grade a KPI, possibly by the Head of Department.
+  gradeKPI(id: ID!, score: Int!): KPI
+}
+
+# Subscriptions for real-time updates on Employee scores.
+type Subscription {
+  # Get real-time updates on an Employee's KPI scores.
+  employeeScores(employeeId: ID!): [KPI!]
+}
+
+# HOD =============================================================
+
+
+# employee =============================================================
+
+
+
+
+# Represents an individual employee.
+type Employee {
+  id: ID!
+  name: String!
+  department: String!
+  position: String!
+  supervisor: Supervisor
+  kpis: [KPI]!
+  scores: [Score]!
+}
+
+# Represents a Key Performance Indicator.
+type KPI {
+  id: ID!
+  name: String!
+  description: String
+  target: Float
+}
+
+# Represents a supervisor who can be graded by employees.
+type Supervisor {
+  id: ID!
+  name: String!
+  department: String!
+  grade: Int
+}
+
+# Represents a score an employee receives for a specific KPI.
+type Score {
+  id: ID!
+  employee: Employee!
+  kpi: KPI!
+  value: Float
+}
+
+# Query type for fetching data.
+type Query {
+  # Get an employee by their unique ID.
+  employee(id: ID!): Employee
+  # Get a KPI by its unique ID.
+  kpi(id: ID!): KPI
+  # Get a supervisor by their unique ID.
+  supervisor(id: ID!): Supervisor
+  # Get a score by its unique ID.
+  score(id: ID!): Score
+  # Get a list of all employees.
+  employees: [Employee]
+  # Get a list of all KPIs.
+  kpis: [KPI]
+  # Get a list of all supervisors.
+  supervisors: [Supervisor]
+  # Get a list of all scores.
+  scores: [Score]
+}
+
+# employee =============================================================
+
+
+
+
+
+
+
+
+
+# Supervisor =============================================================
+
+
+# KPI (Key Performance Indicator) represents a specific performance metric.
+type KPI {
+  id: ID!
+  name: String!
+  value: Float!
+  employee: Employee!
+}
+
+# Score represents a score assigned to an employee by a supervisor.
+type Score {
+  id: ID!
+  value: Float!
+  employee: Employee!
+  supervisor: Supervisor!
+}
+
+# Supervisor represents a supervisor who manages employees and their KPIs.
+type Supervisor {
+  id: ID!
+  name: String!
+  employees: [Employee!]!
+
+  # Approve an employee's KPI. Requires the employee ID and KPI ID.
+  approveKPI(employeeId: ID, kpiId: ID): Boolean
+
+  # Delete an employee's KPI. Requires the employee ID and KPI ID.
+  deleteKPI(employeeId: ID, kpiId: ID): Boolean
+
+  # Update an employee's KPI with a new value. Requires the employee ID, KPI ID, and the new value.
+  updateKPI(employeeId: ID, kpiId: ID, newValue: Float): KPI
+
+  # View scores of a specific employee assigned to this supervisor. Requires the employee ID.
+  viewEmployeeScores(employeeId: ID): [Score!]!
+
+  # Grade an employee's KPI with a score value. Requires the employee ID, KPI ID, and the score value.
+  gradeKPI(employeeId: ID, kpiId: ID, scoreValue: Float): Score
+}
+
+# Query type for retrieving information.
+type Query {
+  # Get information about a specific supervisor by their ID.
+  supervisor(id: ID!): Supervisor
+
+  # Get information about a specific employee by their ID.
+  employee(id: ID!): Employee
+}
+
+# Mutation type for creating new KPIs.
+type Mutation {
+  # Create a new KPI for an employee. Requires the employee ID, KPI name, and the initial value.
+  createKPI(employeeId: ID, name: String, value: Float): KPI
+}
+
+# The GraphQL schema definition.
+schema {
+  query: Query
+  mutation: Mutation
+}
