@@ -68,7 +68,7 @@ public distinct service class GraphQL {
       //  getting data from mongo db
         stream<Employees, error?> sddf = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
 
-        // creting a array of emplapyees to pass the data from the database to or local array 
+        // creting a array of   employee to pass the data from the database to or local array 
         Employees[] employees = [];
 
         _ = check sddf.forEach(function(Employees emp) {
