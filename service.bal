@@ -43,18 +43,7 @@ mongodb:ConnectionConfig mongoConfig = {
 // Create a new MongoDB client using the provided configuration
 mongodb:Client mongoClient = check new (mongoConfig);
 
-table<DepartmentEntry> key(DepId) covidEntriesTable = table [
-    {DepId: "GE", Name: "Geology", objectives: "To lead"},
-    {DepId: "lW", Name: "Law ", objectives: ""},
-    {DepId: "CS", Name: "Computer Science", objectives: "Teach t"}
-];
-
-table<Employees> key(EmployeesId) EmplaoyeesEntries = table [
-    {EmployeesId: "Nust01", Name: "Geology", KPIs: "To", TotalScore: 12},
-    {EmployeesId: "Nust02", Name: "Law ", KPIs: "ewrwe", TotalScore: 21},
-    {EmployeesId: "Nust03", Name: "Computer Science", KPIs: "sdfsdf", TotalScore: 34}
-];
-
+ 
 
 
 public distinct service class GraphQL {
@@ -98,19 +87,9 @@ public distinct service class GraphQL {
 }
 
 service on new graphql:Listener(9000) {
-    resource function get all() returns GraphQL[] {
-        DepartmentEntry[] covidEntries = covidEntriesTable.toArray().cloneReadOnly();
-        return covidEntries.map(entry => new GraphQL(entry, null));
-    }
+ 
 
-    resource function get searchDeparment(string DepId) returns GraphQL? {
-
-        DepartmentEntry? covidEntry = covidEntriesTable[DepId];
-        if covidEntry is DepartmentEntry {
-            return new (covidEntry, null);
-        }
-        return;
-    }
+ 
 
     resource function get EmployeesTotalScore(string Name) returns Employees[]|error? {
         // string collectionName : Name of the collection
