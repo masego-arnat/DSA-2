@@ -265,7 +265,7 @@ remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
             log:printInfo("Error in deleting data");
         }
 
-        return new GraphQL(null, entry);
+        return new GraphQL( entry);
     }
 
     remote function UpdateEmployeeSKPIs(Employees entry) returns GraphQL {
