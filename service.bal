@@ -55,33 +55,27 @@ table<Employees> key(EmployeesId) EmplaoyeesEntries = table [
     {EmployeesId: "Nust03", Name: "Computer Science", KPIs: "sdfsdf", TotalScore: 34}
 ];
 
+
+
 public distinct service class GraphQL {
     /// The department entry record, marked as readonly.
-    private final readonly & DepartmentEntry entryRecord;
-    /// The Employees entry record, marked as readonly.
-    private final readonly & Employees entryRecddord;
-    function init(DepartmentEntry? entryRecord, Employees? entryRecddord) {
+ 
+    resource function get deparment(string Id) returns string {
+   // Execute the MongoDB query
+        string   result = mongoClient->findOne("Department", Id);
 
-        self.entryRecord = <DepartmentEntry & readonly>entryRecord.cloneReadOnly();
+        return result;
+    }
+ 
 
-        self.entryRecddord = <Employees & readonly>entryRecddord.cloneReadOnly();
+    resource function get objectives(string Id) returns string {
+       
+           // Execute the MongoDB query
+        string   result = mongoClient->findOne("DepartmentObjectives", Id);
 
     }
 
-    resource function get deparmentId() returns string {
-
-        return self.entryRecord.DepId;
-    }
-
-    resource function get deparment() returns string {
-        return self.entryRecord.Name;
-    }
-
-    resource function get objectives() returns string {
-        return self.entryRecord.objectives;
-    }
-
-    resource function get EmployeesTotalScores() returns Employees[] {
+    resource function get EmployeesTotalScores(string employeeId) returns Employees[] {
       //  getting data from mongo db
         stream<Employees, error?> sddf = checkpanic mongoClient->find("Employees", (), null, null, null, -1, -1);
 
@@ -89,8 +83,11 @@ public distinct service class GraphQL {
         Employees[] employees = [];
 
         _ = check sddf.forEach(function(Employees emp) {
-            
-                employees.push(emp);
+            if(emp.employeeId  ==  employeeId)  {
+            employees.push(emp);
+
+            }
+             
           
 
         });
@@ -186,12 +183,13 @@ remote function CreateEmployees(Employees entry) returns GraphQL {
 }
 
 // A remote function to delete department objectives from a MongoDB collection.
-remote function delete(DepartmentEntry entry) returns GraphQL {
+remote function delete(string  documentname) returns boolean  {
 
     // Use the `mongoClient->delete` method to delete documents from the "DepartmentObjectives" collection.
-    int deleteRet = checkpanic mongoClient->delete("DepartmentObjectives", (), null, false);
-
+  int deleteRet = checkpanic mongoClient->delete("DepartmentObjectives", (), documentname, true);
+      boolean results = false;
     if (deleteRet > 0) {
+        results = true;
         // Log the number of deleted documents if successful.
         log:printInfo("Deleted the doc: '", deleteRet);
     } else {
@@ -199,13 +197,13 @@ remote function delete(DepartmentEntry entry) returns GraphQL {
         log:printInfo("Error in deleting data");
     }
 
-    // Return a new GraphQL object with the deleted department entry and `null`.
-    return new GraphQL(entry, null);
+    
+    return  results;
 }
 
 
    // A remote function to assign a supervisor to an employee and store the data in a MongoDB collection.
-remote function AssignEmployeeSupervisor(Employees entry) returns GraphQL {
+remote function AssignEmployeeSupervisor(Employees entry) returns json {
 
     // Create a JSON object representing the supervisor-employee relationship.
     map<json> eventJson = {
@@ -227,7 +225,7 @@ remote function AssignEmployeeSupervisor(Employees entry) returns GraphQL {
 }
  
 // A remote function to approve an employee's Key Performance Indicators (KSI) and store the data in a MongoDB collection.
-remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
+remote function ApproveEmployeesKSI(Employees entry) returns json {
 
     // Create a JSON object representing the approved KSI data.
     map<json> eventJson = {
@@ -244,12 +242,12 @@ remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
         log:printInfo("Error in saving data", e);
     }
 
-    // Return a new GraphQL object with `null` as the entry and the approved KSI data.
-    return new GraphQL(null, entry);
+  .
+    return eventJson;
 }
 
 
-    remote function DeleteEmployeesKSI(Employees entry) returns GraphQL {
+    remote function DeleteEmployeesKSI(Employees entry) returns json {
         // string collectionName : Name of the collection
         // string? databaseName : Name of the database
         // map<json>? filter : Filter for the query
@@ -258,7 +256,8 @@ remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
         // int limit : The limit of documents that should be returned. If the limit is -1, all the documents in the result will be returned.
         // int skip : The number of documents that should be skipped. If the skip is -1, no documents will be skipped.
 
-        int deleteRet = checkpanic mongoClient->delete("DepartmentObjectives", (), null, false);
+       
+          int deleteRet = checkpanic mongoClient->delete("Employee", (), entry, true);
         if (deleteRet > 0) {
             log:printInfo("Deleted the doc: '" + deleteRet);
         } else {
@@ -268,7 +267,7 @@ remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
         return new GraphQL( entry);
     }
 
-    remote function UpdateEmployeeSKPIs(Employees entry) returns GraphQL {
+    remote function UpdateEmployeeSKPIs(Employees entry) returns json {
 
         map<json> eventJson = {
         KSI: entry.KSI,
@@ -278,7 +277,7 @@ remote function ApproveEmployeesKSI(Employees entry) returns GraphQL {
 
         check mongoClient->insert(eventJson, "Employees");
 
-        return new GraphQL(null, entry);
+        return eventJson);
     }
 
     remote function ViewEmployeeScores(Supervisor SupervisorId) returns Employees[] {

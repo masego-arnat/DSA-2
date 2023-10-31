@@ -184,3 +184,14 @@ public function GrademployeeKPIs(string supervisorId, string employeeId, string 
     var response = self.graphqlQuery(mutation);
 
 }
+
+public function CreateKPIs(string supervisorId, string employeeId, string  KPI ) returns json|error {
+    // Construct a GraphQL mutation to delet an employee's KPIs.
+    string mutation = "{\"query\:  { grademployeeKPIs("supervisorId": " + supervisorId , "employeeId": employeeId , ) }\"}";
+
+   string mutation = "{\"query\": \"mutation { grademployeeKPIs(supervisorId: \"" + supervisorId + "\", employeeId: \"" + employeeId + "\", KPI: \"" + KPI + "\", jobTitle: \"" + jobTitle + "\", position: \"" + position + "\", role: " + role + ", departmentId: \"" + departmentId + "\") { supervisorId, firstName, lastName } }\"}";
+   
+    // Send the mutation to the GraphQL server.
+    var response = self.graphqlQuery(mutation);
+
+}
