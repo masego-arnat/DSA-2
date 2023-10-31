@@ -115,7 +115,7 @@ service on new graphql:Listener(9000) {
     }
 
 // A remote function to add a department entry to a MongoDB collection.
-remote function add(DepartmentEntry entry) returns GraphQL {
+remote function add(DepartmentEntry entry) returns json {
 
     // Create a JSON object representing the department entry.
     map<json> eventJson = {
@@ -134,12 +134,12 @@ remote function add(DepartmentEntry entry) returns GraphQL {
     }
 
     // Return a new GraphQL object with the added entry and a null error.
-    return new GraphQL(entry, null);
+    return eventJson;
 }
 
 
    // A remote function to create an employee entry in a MongoDB collection.
-remote function CreateEmployees(Employees entry) returns GraphQL {
+remote function CreateEmployees(Employees entry) returns eventJson {
 
     // Create a JSON object representing the employee entry.
     map<json> eventJson = {
@@ -158,7 +158,7 @@ remote function CreateEmployees(Employees entry) returns GraphQL {
     }
 
     // Return a new GraphQL object with `null` entry and the added employee data.
-    return new GraphQL(null, entry);
+    return eventJson;
 }
 
 // A remote function to delete department objectives from a MongoDB collection.
